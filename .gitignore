@@ -4,3 +4,9 @@ __pycache__/
 ./dist
 ./logdir
 MUJOCO_LOG.TXT
+.tools/
+venv/
+*.tar.gz
+plots/
+.vscode/
+logdir/

@@ -1,3 +1,62 @@
+# Dreamer (Modernized/Portable Fork)
+
+**A portable, reproduction-ready fork of the original Dreamer agent.**
+
+This repository contains a **self-contained environment setup** that allows the original TensorFlow 2.2-based code to run on modern Linux systems (2025/2026) without dependency conflicts.
+
+Original Project: [danijar/dreamer](https://github.com/danijar/dreamer)
+
+## 🚀 Key Differences in This Fork
+
+Running older Deep Learning projects can be difficult due to Python/CUDA version mismatches. This fork solves that by:
+
+1.  **Portable Python 3.8**: Bundles a standalone Python build so you don't need to downgrade your system Python.
+2.  **Pinned Dependencies**: `requirements.txt` with exact versions of `tensorflow-gpu==2.2.0`, `dm_control`, and `mujoco` that are known to work together.
+3.  **One-Click Setup**: Includes `reproduce_env.sh` to automatically set up the environment.
+
+## 🛠️ Quick Start
+
+### 1. Setup Environment
+
+Simply run the reproduction script. It will download the portable Python and install everything into a local `venv/`.
+
+```bash
+bash reproduce_env.sh
+```
+
+### 2. Run Training
+
+**Always use the python inside `./venv/bin/`**:
+
+```bash
+./venv/bin/python dreamer.py --logdir ./logdir/experiment1 --task dmc_walker_walk
+```
+
+### 3. Monitor Progress
+
+Visualize training with TensorBoard:
+
+```bash
+./venv/bin/tensorboard --logdir ./logdir
+```
+
+### 4. Plot Results
+
+Generate plotting curves:
+
+```bash
+./venv/bin/python plotting.py --indir ./logdir --outdir ./plots --xaxis step --yaxis train/return --bins 1000
+```
+
+_(Use `--bins 3e4` and `--yaxis test/return` for longer runs)_
+
+---
+
+## 📜 Original README
+
+<details>
+<summary>Click to view original README</summary>
+
 # Dream to Control
 
 **NOTE:** Check out the code for [DreamerV2](https://github.com/danijar/dreamerv2), which supports both Atari and DMControl environments.
@@ -34,32 +93,4 @@ efficiently learn a long-horizon policy.
 [paper]: https://arxiv.org/pdf/1912.01603.pdf
 [code]: https://github.com/google-research/dreamer
 
-## Instructions
-
-Get dependencies:
-
-```
-pip3 install --user tensorflow-gpu==2.2.0
-pip3 install --user tensorflow_probability
-pip3 install --user git+git://github.com/deepmind/dm_control.git
-pip3 install --user pandas
-pip3 install --user matplotlib
-```
-
-Train the agent:
-
-```
-python3 dreamer.py --logdir ./logdir/dmc_walker_walk/dreamer/1 --task dmc_walker_walk
-```
-
-Generate plots:
-
-```
-python3 plotting.py --indir ./logdir --outdir ./plots --xaxis step --yaxis test/return --bins 3e4
-```
-
-Graphs and GIFs:
-
-```
-tensorboard --logdir ./logdir
-```
+</details>
