@@ -10,3 +10,9 @@ venv/
 plots/
 .vscode/
 logdir/
+Report/report.aux
+Report/report.fdb_latexmk
+Report/report.log
+Report/report.out
+Report/report.fls
+Report/report.synctex.gz

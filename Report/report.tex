@@ -1,0 +1,61 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+
+\title{CS590: Socially Cognizant Robotics \\ Deliverable 1}
+\author{Group Members: Rohit Bellam (rsb204), Karim Smires (ks1686)}
+\date{February 9th, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Selected Paper}
+\textbf{Title:} Dream to Control: Learning Behaviors by Latent Imagination \\
+\textbf{Authors:} Danijar Hafner, Timothy Lillicrap, Jimmy Ba, Mohammad Norouzi \\
+\textbf{Venue:} ICLR 2020 \\
+\textbf{Paper:} \url{https://arxiv.org/pdf/1912.01603} \\
+\textbf{Code:} \url{https://github.com/danijar/dreamer} \\
+\textbf{Our Fork:} \url{https://github.com/ks1686/dreamer}
+
+\section{Summary}
+Dreamer is a model-based reinforcement learning agent that learns long-horizon behaviors from high-dimensional image observations by "dreaming" in a latent space. The problem is formulated as a POMDP, and the architecture relies on a Recurrent State Space Model (RSSM) to learn a world model. This dynamics model includes a representation model that encodes observations into compact latent states, a transition model that predicts future latent states without generating images, and a reward model. By predicting future states and rewards, the agent decouples representation learning from behavior learning, enabling it to learn policy and value functions purely from imagined trajectories.
+
+Behavior learning in Dreamer uses an actor-critic approach where the action model outputs tanh-transformed Gaussian actions and the value model estimates expected rewards beyond the imagination horizon using $V\lambda$ returns. A key novelty is the use of stochastic backpropagation to propagate analytic value gradients back through the learned dynamics, avoiding high-variance derivative-free optimization. Evaluated on 20 tasks from the DeepMind Control Suite, Dreamer achieves state-of-the-art data efficiency, surpassing methods like PlaNet and D4PG while maintaining comparable asymptotic performance.
+
+\section{Implementation Details}
+We utilized the open-source TensorFlow 2 implementation provided by the authors. The setup process involved several steps to ensure compatibility with our modern Linux environment.
+
+\subsection{Environment Setup}
+To avoid dependency conflicts with system packages, we created a specialized Python 3.8 virtual environment. Key dependencies included: \texttt{tensorflow-gpu==2.2.0} (required for the legacy codebase), \texttt{dm\_control} for the simulation environments, and helper libraries like \texttt{termcolor} and \texttt{ruamel.yaml} for logging and configuration.
+
+\subsection{Challenges and Solutions}
+The primary challenge encountered was a missing system dependency for \texttt{ffmpeg}, which the code uses to generate video summaries of the agent's performance. The original code failed with a ``Broken pipe'' error when attempting to write improved GIF summaries.
+
+\textbf{Solution:} We downloaded a static build of \texttt{ffmpeg} and placed it in a local \texttt{.tools/} directory within the project. We then updated the system \texttt{PATH} environment variable to include this directory before running the training script.
+
+\section{Results}
+We executed the Dreamer agent on the \texttt{dmc\_walker\_walk} task for an initial 5,000 steps to verify the installation and data collection pipeline. This phase corresponds to the ``prefill'' stage where the agent acts randomly to populate the replay buffer before model training begins.
+
+\subsection{Quantitative Metrics}
+As expected for a random policy, the returns fluctuated between 30 and 50 (Figure \ref{fig:results}). This confirms the environment is correctly providing rewards and the agent is interacting with it, establishing a baseline for future learning.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.6\textwidth]{curves.png}
+  \vspace{-1em}
+  \caption{Returns over the first 5,000 steps (prefill phase) on \texttt{dmc\_walker\_walk}. The values reflect the random policy used for initial data collection.}
+  \label{fig:results}
+\end{figure}
+\vspace{-1em}
+
+\subsection{Qualitative Analysis}
+The training pipeline successfully generated all necessary artifacts, including \texttt{metrics.jsonl} for performance tracking. Additionally, \texttt{events.out.tfevents} files were created for TensorBoard. Finally, the system rendered video summaries of the agent's interactions, confirming the \texttt{ffmpeg} integration. This successful execution of the prefill phase demonstrates that the complex software stack (TensorFlow 2.2, MuJoCo, DeepMind Control) is correctly configured.
+
+\section{Conclusion}
+We have successfully set up and verified the Dreamer codebase. The agent effectively interacts with the simulated environment, collects data, and logs performance metrics. While the 5,000-step run was insufficient for the agent to learn a high-performing policy (which typically requires millions of steps), it confirms the reproducibility of the implementation environment and readiness for full-scale experiments.
+
+\end{document}
