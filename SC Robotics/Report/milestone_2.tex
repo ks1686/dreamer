@@ -1,0 +1,156 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{parskip}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing{\section}{0pt}{6pt}{2pt}
+\titlespacing{\subsection}{0pt}{4pt}{1pt}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+\setlength{\parskip}{3pt}
+
+\begin{document}
+
+\begin{center}
+  {\Large \textbf{CS590: Socially Cognizant Robotics}} \\[5pt]
+  {\Large \textbf{Deliverable 2}} \\[12pt]
+  \textbf{Group Members:} \\[3pt]
+  Rohit Bellam, rsb204 \\
+  Karim Smires, ks1686 \\[8pt]
+  March 4th, 2026
+\end{center}
+
+\vspace{2pt}
+
+\section{1. Overview}
+
+Following the framework of Kress-Gazit et al.\ in \textit{Robot
+  Learning as an Empirical Science: Best Practices for Policy
+Evaluation}~\cite{bestpractices}, we analyze the evaluation
+methodology of \textit{Dream to Control} (Hafner et al.,
+ICLR 2020). We identify missing metrics, insufficient scene
+diversity, and unreported failure modes that would strengthen the
+understanding of Dreamer's capabilities and limitations.
+
+\section{2. Additional Metrics}
+
+\subsection{2.1 Lack of Success Criteria and Sub-Goal Decomposition}
+Dreamer reports performance mainly through \textbf{episode return}
+averaged over 5 seeds---analogous to the ``success rate only''
+problem identified by Kress-Gazit et al. No binary
+success/failure threshold is defined for any task, making it
+impossible to determine what fraction of episodes produce stable
+locomotion versus partial failures. Moreover, Dreamer's tasks are
+multi-phase (e.g., Hopper Hop requires standing, balancing, then
+hopping), but no sub-goal rubric is reported. As the best
+practices paper highlights with its Pancake example (Table 1),
+sub-goal tracking can reveal that a policy with low overall success
+may still reliably complete early stages, providing a
+gradient for understanding partial progress.
+
+\subsection{2.2 Statistical Analysis}
+While Dreamer reports mean and standard deviation over 5 seeds, no
+formal statistical comparison is performed between methods. As
+Kress-Gazit et al.\ emphasize, point estimates can be
+misleading---bootstrap confidence intervals or stratified
+permutation tests would quantify whether Dreamer's advantage over
+PlaNet or D4PG is statistically significant on individual tasks,
+rather than relying on visual inspection of overlapping error bars.
+The number of evaluation episodes per checkpoint is also unreported,
+a concern raised by the best practices paper.
+
+\subsection{2.3 Trajectory Smoothness and Formal Specifications}
+For real-world deployment, \textit{how} a robot moves matters as much
+as whether it succeeds. The best practices paper recommends SPARC
+(SPectral ARC length) to quantify trajectory smoothness---relevant for Dreamer's
+locomotion tasks, where jerky or oscillating trajectories may achieve
+high returns in simulation but would fail on physical hardware.
+Additionally, Signal Temporal Logic (STL) robustness could
+automatically evaluate safety constraints (e.g., joint torque limits,
+ground contact forces), quantifying \textit{how close} the agent is to
+violating a specification.
+
+\section{3. Additional Scenes and Environments}
+
+\subsection{3.1 Limited Visual Diversity and No Out-of-Distribution Testing}
+All 20 DeepMind Control Suite tasks use simple, uniform backgrounds
+with consistent lighting at $64 \times 64$ resolution. There is no
+evaluation of robustness to visual perturbations such as lighting changes,
+camera shifts, or background clutter---conditions that benchmarks
+like Distracting Control Suite were designed to test.
+Since Dreamer's world model is trained via pixel reconstruction,
+visual simplicity likely inflates performance by making reconstruction
+trivially easy; it remains unclear whether the latent dynamics would
+remain accurate under richer visual conditions.
+
+\subsection{3.2 Narrow Task Diversity and No Sim-to-Real Transfer}
+The 20 DMC tasks are predominantly locomotion-based. There are no
+manipulation tasks involving object interaction, no navigation with
+obstacles, and no multi-agent scenarios. Analogous to the ``forest
+vs.\ bug trap'' distinction in the milestone description, the DMC
+tasks---while varied in dynamics---do not test for qualitatively
+different challenges such as deceptive reward landscapes that induce
+local optima in
+the learned policy. Furthermore, despite Dreamer's emphasis on
+computational efficiency for robotics, no sim-to-real experiments
+are conducted. Even a simple domain transfer test would better
+support the paper's claims of practical relevance.
+
+\section{4. Failure Modes}
+
+\subsection{4.1 Reported Failure Modes}
+The paper acknowledges two failure modes through ablations: (1)
+\textbf{shortsighted behavior} when the value model is removed,
+causing poor performance on long-horizon tasks like Acrobot Swingup,
+and (2) \textbf{representation insufficiency} when using reward-only
+prediction, which fails to learn useful latent dynamics. The
+Atari/DMLab experiments further suggest the reconstruction-based
+world model struggles with visually complex environments.
+
+\subsection{4.2 Unreported Failure Modes}
+Several important failure modes are neither analyzed nor discussed:
+
+\textbf{World model compounding error:} As the imagination horizon
+increases, transition model prediction errors accumulate. While
+Figure 4 shows robustness to horizon length in aggregate, there is no
+analysis of when or how predictions degrade, or how compounding error
+affects specific tasks.
+
+\textbf{Sensitivity to initial conditions:} The best practices paper
+demonstrates (Examples 1--2) that learned policies are highly
+sensitive to initial conditions. Dreamer reports no
+per-initial-condition analysis despite using randomized initial
+states, making it unclear whether strong average performance masks
+consistent failure from certain configurations.
+
+\textbf{Exploration failures:} Dreamer uses simple Gaussian noise
+($\sigma = 0.3$) for exploration. In sparse-reward tasks (Cartpole
+Swingup Sparse, Acrobot Swingup), this may be insufficient to
+discover rewarding trajectories, yet no analysis of exploration
+adequacy or comparison to structured exploration strategies is
+provided.
+
+\textbf{Observation noise and partial observability:} Although
+formulated as a POMDP, all evaluations use clean, noise-free rendered
+images. Robustness to sensor noise, dropped frames, or occluded
+observations---conditions ubiquitous in real robotic
+systems---is untested.
+
+\textbf{Distribution shift (objective mismatch):} As the policy
+improves, it visits state regions underrepresented in the replay
+buffer. The world model may then make poor predictions precisely
+where accurate imagination matters most, potentially causing policy
+degradation---a known issue in model-based RL that is not analyzed.
+
+\vspace{2pt}
+\begin{thebibliography}{9}
+  \small
+  \bibitem{bestpractices} H.\ Kress-Gazit et al., ``Robot Learning as
+  an Empirical Science: Best Practices for Policy Evaluation,''
+  \textit{arXiv:2409.09491}, 2024.
+\end{thebibliography}
+
+\end{document}
