@@ -398,7 +398,7 @@ output.json
 ._*
 
 # Custom folder icons
-Icon
+Icon
 
 # Volume root files
 .DocumentRevisions-V100
@@ -498,6 +498,42 @@ x86/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+### Dataset / large generated data
+# Torchvision download cache (MNIST etc.)
+data/
+# Generated pickle datasets (e.g. mnist.pkl)
+*.pkl
+
+### LaTeX
+# Build artifacts (keep only .tex and .pdf)
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ind
+*.ilg
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+*.xdv
 
 ### Xcode
 # Xcode user settings
