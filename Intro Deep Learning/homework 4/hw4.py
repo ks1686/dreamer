@@ -5,13 +5,24 @@ Three variants: Baseline, Dropout, BatchNorm
 
 import time
 from collections import OrderedDict
+import os
+from pathlib import Path
+import tempfile
 
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "matplotlib"))
+import matplotlib
+if not os.environ.get("DISPLAY"):
+    matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+CURVES_PATH = BASE_DIR / "training_curves.png"
 
 # ── Device ──────────────────────────────────────────────────────────────────
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -29,10 +40,10 @@ transform = transforms.Compose([
 ])
 
 train_dataset = torchvision.datasets.CIFAR10(
-    root="./data", train=True, download=True, transform=transform
+    root=str(DATA_DIR), train=True, download=True, transform=transform
 )
 test_dataset = torchvision.datasets.CIFAR10(
-    root="./data", train=False, download=True, transform=transform
+    root=str(DATA_DIR), train=False, download=True, transform=transform
 )
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
@@ -185,50 +196,61 @@ def train_model(model, name):
     return train_accs, test_accs, elapsed
 
 
-# ── Run all three models ─────────────────────────────────────────────────────
-results = {}
+def plot_results(results):
+    epochs = range(1, EPOCHS + 1)
+    colors = {"Baseline": "steelblue", "Dropout": "darkorange", "BatchNorm": "seagreen"}
 
-for model_cls, label in [
-    (LeNet5(),          "Baseline"),
-    (LeNet5Dropout(),   "Dropout"),
-    (LeNet5BatchNorm(), "BatchNorm"),
-]:
-    train_accs, test_accs, elapsed = train_model(model_cls, label)
-    results[label] = {
-        "train_accs": train_accs,
-        "test_accs":  test_accs,
-        "time":       elapsed,
-    }
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig.suptitle("LeNet-5 on CIFAR-10: Training Curves", fontsize=14)
 
-# ── Task 5: Plot & Compare ───────────────────────────────────────────────────
-epochs = range(1, EPOCHS + 1)
-colors = {"Baseline": "steelblue", "Dropout": "darkorange", "BatchNorm": "seagreen"}
+    for label, data in results.items():
+        axes[0].plot(epochs, data["train_accs"], label=label, color=colors[label])
+        axes[1].plot(epochs, data["test_accs"],  label=label, color=colors[label])
 
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-fig.suptitle("LeNet-5 on CIFAR-10: Training Curves", fontsize=14)
+    for ax, title in zip(axes, ["Training Accuracy", "Test Accuracy"]):
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Accuracy (%)")
+        ax.set_title(title)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
 
-for label, data in results.items():
-    axes[0].plot(epochs, data["train_accs"], label=label, color=colors[label])
-    axes[1].plot(epochs, data["test_accs"],  label=label, color=colors[label])
+    plt.tight_layout()
+    plt.savefig(CURVES_PATH, dpi=150)
+    plt.close(fig)
+    print(f"Saved {CURVES_PATH.name}")
 
-for ax, title in zip(axes, ["Training Accuracy", "Test Accuracy"]):
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Accuracy (%)")
-    ax.set_title(title)
-    ax.legend()
-    ax.grid(True, alpha=0.3)
 
-plt.tight_layout()
-plt.savefig("training_curves.png", dpi=150)
-plt.show()
-print("Saved training_curves.png")
+def print_summary(results):
+    print("\n" + "=" * 58)
+    print(f"{'Model':<12} {'Train Acc':>10} {'Test Acc':>10} {'Time (s)':>10}")
+    print("=" * 58)
+    for label, data in results.items():
+        print(f"{label:<12} {data['train_accs'][-1]:>9.2f}% "
+              f"{data['test_accs'][-1]:>9.2f}% "
+              f"{data['time']:>9.1f}s")
+    print("=" * 58)
 
-# ── Summary table ────────────────────────────────────────────────────────────
-print("\n" + "=" * 58)
-print(f"{'Model':<12} {'Train Acc':>10} {'Test Acc':>10} {'Time (s)':>10}")
-print("=" * 58)
-for label, data in results.items():
-    print(f"{label:<12} {data['train_accs'][-1]:>9.2f}% "
-          f"{data['test_accs'][-1]:>9.2f}% "
-          f"{data['time']:>9.1f}s")
-print("=" * 58)
+
+def main():
+    # ── Run all three models ─────────────────────────────────────────────────
+    results = {}
+
+    for model, label in [
+        (LeNet5(),          "Baseline"),
+        (LeNet5Dropout(),   "Dropout"),
+        (LeNet5BatchNorm(), "BatchNorm"),
+    ]:
+        train_accs, test_accs, elapsed = train_model(model, label)
+        results[label] = {
+            "train_accs": train_accs,
+            "test_accs":  test_accs,
+            "time":       elapsed,
+        }
+
+    # ── Task 5: Plot & Compare ───────────────────────────────────────────────
+    plot_results(results)
+    print_summary(results)
+
+
+if __name__ == "__main__":
+    main()
