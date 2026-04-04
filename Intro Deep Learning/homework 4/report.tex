@@ -73,11 +73,10 @@ classification using PyTorch. Three network variants are evaluated: a baseline m
 without Dropout or Batch Normalization, a model with an added Dropout layer, and a
 model with Batch Normalization layers. All models are trained for 20 epochs using the
 Adam optimizer and compared using training accuracy, test accuracy, and total training
-time. The baseline model reaches 62.24\% test accuracy, the Dropout model improves
-generalization to 64.34\%, and the Batch Normalization model performs best with
-66.47\% test accuracy. All three models satisfy the assignment requirement of exceeding
-50\% test accuracy, with Batch Normalization providing the strongest overall
-improvement.
+time. The baseline model reaches 63.03\% test accuracy, the Dropout model improves
+generalization to 64.32\%, and the Batch Normalization model achieves 63.98\% test
+accuracy. All three models satisfy the assignment requirement of exceeding 50\% test
+accuracy, with Dropout providing the strongest generalization improvement in this run.
 
 \section{Introduction}
 The goal of this homework is to build and evaluate a modified LeNet-5 network for
@@ -217,20 +216,13 @@ set. Total wall-clock training time is also recorded for each model.
 
 \subsection{Results}
 
-\begin{table}[H]
+\begin{figure}[H]
   \centering
-  \begin{tabular}{lccc}
-    \toprule
-    \textbf{Model} & \textbf{Train Acc} & \textbf{Test Acc} & \textbf{Time} \\
-    \midrule
-    Baseline  & 76.67\% & 62.24\% & 65.1 s \\
-    Dropout   & 72.02\% & 64.34\% & 65.0 s \\
-    BatchNorm & \textbf{82.69\%} & \textbf{66.47\%} & 68.8 s \\
-    \bottomrule
-  \end{tabular}
-  \caption{Final training accuracy, final test accuracy, and training time for the
-  three model variants.}
-\end{table}
+  \includegraphics[width=\textwidth]{training_data.png}
+  \caption{Terminal output showing final training accuracy, test accuracy, and
+  training time for the three model variants.}
+  \label{fig:terminal_output}
+\end{figure}
 
 \begin{figure}[H]
   \centering
@@ -245,26 +237,26 @@ All three models exceed the assignment requirement of 50\% test accuracy, which 
 that the modified LeNet-5 architecture is sufficient to learn useful features on
 CIFAR-10.
 
-\textbf{Baseline performance.} The baseline model achieves 62.24\% test accuracy with
-76.67\% training accuracy. The gap between train and test accuracy suggests moderate
+\textbf{Baseline performance.} The baseline model achieves 63.03\% test accuracy with
+75.12\% training accuracy. The gap between train and test accuracy suggests moderate
 overfitting as training progresses.
 
 \textbf{Effect of Dropout.} Adding one Dropout layer decreases the final training
-accuracy to 72.02\% but improves the test accuracy to 64.34\%. This is the expected
+accuracy to 73.96\% but improves the test accuracy to 64.32\%. This is the expected
 pattern for regularization: the model fits the training data less aggressively while
 generalizing better to unseen data.
 
-\textbf{Effect of Batch Normalization.} The BatchNorm model achieves the best overall
-performance, reaching 82.69\% training accuracy and 66.47\% test accuracy. It also
-shows faster early convergence in the recorded results. This suggests that Batch
-Normalization improves optimization and allows the network to learn stronger features
-without sacrificing generalization.
+\textbf{Effect of Batch Normalization.} The BatchNorm model achieves the highest
+training accuracy at 81.82\%, but its test accuracy of 63.98\% falls slightly below
+that of the Dropout model. This suggests that while Batch Normalization accelerates
+optimization and improves training-set performance, it provides a smaller
+generalization benefit than Dropout in this particular run.
 
-\textbf{Overall comparison.} Among the three variants, Batch Normalization provides the
-largest performance gain over the baseline, improving test accuracy by 4.23 percentage
-points. Dropout also improves generalization, but its gain is smaller at 2.10
-percentage points. Based on these results, Batch Normalization is the most effective
-modification for this homework setting.
+\textbf{Overall comparison.} Among the three variants, Dropout provides the largest
+test accuracy gain over the baseline at 1.29 percentage points. Batch Normalization
+also improves test accuracy, but by a smaller margin of 0.95 percentage points. Based
+on these results, Dropout is the most effective modification for generalization in
+this homework setting.
 
 \section{Conclusion}
 This homework implemented and evaluated three modified LeNet-5 models for CIFAR-10
@@ -272,15 +264,16 @@ classification. The baseline model provided a solid starting point and already e
 the required 50\% test accuracy. Adding Dropout improved generalization, while adding
 Batch Normalization produced the best overall result.
 
-The final ranking is:
+The final ranking by test accuracy is:
 \begin{enumerate}
-  \item \textbf{BatchNorm}: 66.47\% test accuracy
-  \item \textbf{Dropout}: 64.34\% test accuracy
-  \item \textbf{Baseline}: 62.24\% test accuracy
+  \item \textbf{Dropout}: 64.32\% test accuracy
+  \item \textbf{BatchNorm}: 63.98\% test accuracy
+  \item \textbf{Baseline}: 63.03\% test accuracy
 \end{enumerate}
 
-These results show that both regularization and normalization are useful for LeNet-5 on
-CIFAR-10, with Batch Normalization offering the strongest benefit in this experiment.
+These results show that both regularization and normalization improve upon the baseline
+on CIFAR-10, with Dropout offering the strongest generalization benefit in this
+experiment.
 
 \begin{thebibliography}{9}
 
