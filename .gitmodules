@@ -1,0 +1,3 @@
+[submodule "SC Robotics/dreamer"]
+	path = SC Robotics/dreamer
+	url = https://github.com/ks1686/dreamer.git
